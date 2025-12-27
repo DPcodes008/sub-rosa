@@ -1,31 +1,35 @@
-from fastapi import WebSocket, WebSocketDisconnect 
 
-#Websocketdisconnet-specific Error (Exception) that FastAPI raises when the user closes the tab or loses internet.
-
+from fastapi import WebSocket, WebSocketDisconnect
+from app.rooms import add_socket_to_room, remove_socket_from_room, get_room
+#printing was done at each step to make debugging easier
 async def websocket_endpoint(websocket: WebSocket):
+    print("websocket hit")
 
-#async tells to do something else while waiting for this
-#TypeHinting, we are telling it is a Websocket datatype
+    await websocket.accept()
+    print("accepted")
 
-    await websocket.accept() 
+    room_id = websocket.query_params.get("room_id")
+    print("room_id:", room_id)
 
-#await tells to wait till the HTTP request gets upgraded to a websocket
+    room = get_room(room_id)
+    print("room exists:", bool(room))
 
-    print("WebSocket connected")
+    success = add_socket_to_room(room_id, websocket)
+    print("added to room:", success)
 
-#exception handling has to be included else if network connection problems or when a tab is closed it will crash
+    if not success:
+        print("closing socket")
+        await websocket.close()
+        return
+
+    print("ENTER receive loop")
 
     try:
-
         while True:
-
-            # Keep the connection alive, but do NOTHING
-
-            await websocket.receive_text()
-
-#putting await here else the loop will unnecessarily run thousands of time
-#running a loop so the connection won't be closed after recieving a single message
+            data = await websocket.receive_text()
+            print("received:", data)
 
     except WebSocketDisconnect:
-        print("WebSocket disconnected")
+        print("client disconnected")
+        remove_socket_from_room(room_id, websocket)
 
