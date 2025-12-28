@@ -1,7 +1,7 @@
-
 from fastapi import WebSocket, WebSocketDisconnect
+import json
 from app.rooms import add_socket_to_room, remove_socket_from_room, get_room
-#printing was done at each step to make debugging easier
+
 async def websocket_endpoint(websocket: WebSocket):
     print("websocket hit")
 
@@ -29,7 +29,16 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             print("received:", data)
 
+            event = json.loads(data)
+
+            if event.get("type") == "MESSAGE":
+                for conn in list(room.sockets):
+                    if conn is not websocket:
+                        await conn.send_json(event)
+
     except WebSocketDisconnect:
         print("client disconnected")
+
+    finally:
         remove_socket_from_room(room_id, websocket)
 

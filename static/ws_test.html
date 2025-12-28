@@ -5,17 +5,52 @@ Not part of production UI.
 -->
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Sub Rosa – Phase 4</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; }
+    .msg { margin: 6px 0; }
+  </style>
+</head>
 <body>
-  <h3>WebSocket Test</h3>
 
-  <script>
-    const ws = new WebSocket("ws://127.0.0.1:8000/ws?room_id=16fi3i");
+<h3>Sub Rosa – Ephemeral Chat</h3>
+<div id="chat"></div>
 
-    ws.onopen = () => console.log("browser: OPEN");
-    ws.onclose = () => console.log("browser: CLOSED");
-    ws.onerror = (e) => console.log("browser: ERROR", e);
-    window.ws = ws;
-  </script>
+<input id="input" placeholder="message..." />
+<button onclick="send()">Send</button>
+
+<script>
+  const chat = document.getElementById("chat");
+  const ws = new WebSocket("ws://localhost:8000/ws?room_id=KvF3EZ");
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+
+    if (msg.type === "MESSAGE") {
+      const el = document.createElement("div");
+      el.className = "msg";
+      el.textContent = `[${msg.sender}] ${msg.content}`;
+      chat.appendChild(el);
+
+      setTimeout(() => {
+        el.remove();
+      }, msg.expires_in * 1000);
+    }
+  };
+
+  function send() {
+    const input = document.getElementById("input");
+    ws.send(JSON.stringify({
+      type: "MESSAGE",
+      sender: "anonymous",
+      content: input.value,
+      expires_in: 5
+    }));
+    input.value = "";
+  }
+</script>
+
 </body>
 </html>
 
