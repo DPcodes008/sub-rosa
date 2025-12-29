@@ -1,19 +1,9 @@
 from fastapi import FastAPI, WebSocket
 import asyncio
 from app.ws import websocket_endpoint
-from app.rooms import cleanup_expired_rooms
 from app.rooms import create_room
 
 app = FastAPI()
-
-@app.on_event("startup")
-async def start_room_reaper():
-    async def room_reaper():
-        while True:
-            await cleanup_expired_rooms()
-            await asyncio.sleep(5)  # check every 5 seconds
-    asyncio.create_task(room_reaper())
-#Starts when server starts .Every 5 seconds,Checks for expired rooms.Kills them if needed
 
 
 @app.post("/create-room")
