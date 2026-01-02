@@ -1,5 +1,3 @@
-# app/rooms.py
-
 from typing import Dict, Set
 from fastapi import WebSocket
 from app.config import redis_client

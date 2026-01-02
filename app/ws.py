@@ -1,9 +1,19 @@
 from fastapi import WebSocket, WebSocketDisconnect
+from app.auth import verify_session_token
 import json
 from app.rooms import add_socket_to_room, remove_socket_from_room, get_room
 
 async def websocket_endpoint(websocket: WebSocket):
     print("websocket hit")
+
+    # AUTH CHECK — MUST BE BEFORE accept()
+    token = websocket.query_params.get("token")
+    payload = verify_session_token(token)
+
+    if not payload:
+        print("invalid or missing token")
+        await websocket.close()
+        return
 
     await websocket.accept()
     print("accepted")

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Sub Rosa — Rooms</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #0e0e0e;
+      color: #eaeaea;
+      padding: 20px;
+    }
+    #log div {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Sub Rosa — testroom</h2>
+<div id="log"></div>
+
+<input id="msg" placeholder="message..." />
+<button onclick="send()">Send</button>
+
+<script>
+// Step 0: check if token came via URL (magic link redirect)
+const params = new URLSearchParams(window.location.search);
+const urlToken = params.get("token");
+
+if (urlToken) {
+  localStorage.setItem("session_token", urlToken);
+
+  // Clean URL (remove ?token=...)
+  window.history.replaceState({}, document.title, "/rooms.html");
+}
+
+//  Step 1: get session token from storage
+const token = localStorage.getItem("session_token");
+
+// 🚨 If token missing, force login
+if (!token) {
+  alert("Not logged in");
+  window.location.href = "/login.html";
+}
+
+
+  //  Step 2: open authenticated WebSocket
+  const ws = new WebSocket(
+    `ws://localhost:8000/ws?room_id=testroom&token=${token}`
+  );
+
+  ws.onopen = () => {
+    console.log("WebSocket connected");
+  };
+
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    const div = document.createElement("div");
+    div.textContent = `[${data.sender || "anon"}] ${data.content}`;
+    document.getElementById("log").appendChild(div);
+  };
+
+  ws.onclose = () => {
+    console.log("WebSocket closed");
+  };
+
+  function send() {
+    const input = document.getElementById("msg");
+    ws.send(JSON.stringify({
+      type: "MESSAGE",
+      sender: "anon",
+      content: input.value,
+      expires_in: 10
+    }));
+    input.value = "";
+  }
+</script>
+
+</body>
+</html>
+
