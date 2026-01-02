@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "libsodium-wrappers": "^0.7.16"
+  },
+  "name": "sub_rosa",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DPcodes008/sub-rosa.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DPcodes008/sub-rosa/issues"
+  },
+  "homepage": "https://github.com/DPcodes008/sub-rosa#readme",
+  "description": ""
+}
